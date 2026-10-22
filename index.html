@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yatogami Sanctuary | 十香的数字同人小窝</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #9c27b0;
+            --secondary-color: #673ab7;
+            --accent-color: #e040fb;
+            --bg-dark: #0f0b1a;
+            --card-bg: rgba(26, 18, 43, 0.75);
+            --text-main: #f3e5f5;
+            --text-muted: #b39ddb;
+            --border-color: rgba(156, 39, 176, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(156, 39, 176, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(103, 58, 183, 0.15) 0%, transparent 40%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(15, 11, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--accent-color);
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 1rem;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #e040fb, #b388ff, #7c4dff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--accent-color);
+            margin: 0.5rem auto 0;
+            border-radius: 2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="logo">yatogami.bbroot.com</a>
+        <nav>
+            <a href="#home" class="active">首页</a>
+            <a href="#gallery">同人画廊</a>
+            <a href="#galgame">Galgame 鉴赏</a>
+            <a href="#about">关于小窝</a>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <h1>Yatogami Sanctuary</h1>
+        <p>欢迎来到基于 yatogami.bbroot.com 搭建的二次元同人与技术实验小窝，这里记录着对夜刀神十香的热爱与数媒技术的探索。</p>
+        <a href="#gallery" class="btn">探索内容</a>
+    </section>
+
+    <div class="container">
+        <section id="gallery">
+            <h2 class="section-title">同人视觉与壁纸</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>十香专属壁纸精选</h3>
+                    <p>收集与整理的高清夜刀神十香同人插画，紫色基调与极致视觉美学的完美碰撞。</p>
+                </div>
+                <div class="card">
+                    <h3>数字媒体创作</h3>
+                    <p>结合 Maya、Blender 建模与 AE 动态效果制作的数媒习作与桌面定制主题展示。</p>
+                </div>
+                <div class="card">
+                    <h3>硬笔书法日常</h3>
+                    <p>行楷与瘦金体硬笔书法练习记录，体验线条与字体的古典之美。</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="container">
+        <section id="galgame">
+            <h2 class="section-title">Galgame 游戏日志</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>视觉小说通关记录</h3>
+                    <p>收录《樱之诗》、《Summer Pockets》、《千恋万花》等经典作品的游玩心得与感悟。</p>
+                </div>
+                <div class="card">
+                    <h3>汉化与生肉阅读</h3>
+                    <p>配合 LunaTranslator 与日常日语学习（目标 JLPT N1）的游玩手记。</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 yatogami.bbroot.com. All Rights Reserved. Powered by DNSHE & Static Hosting.</p>
+    </footer>
+
+</body>
+</html>
