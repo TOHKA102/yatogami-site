@@ -1,9 +1,30 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    transition: background-image 0.5s ease-in-out;
+  }
+  /* 半透明黑色遮罩，确保文字始终清晰 */
+  .bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 5, 20, 0.55);
+    z-index: -1;
+  }
+</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yatogami Sanctuary | 十香的数字同人小窝</title>
+    <title>Yatogami Sanctuary | TOHKA的小窝</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -179,6 +200,38 @@
     </style>
 </head>
 <body>
+    <div class="bg-overlay"></div>
+
+<script>
+  // 1. 定义你的壁纸路径列表（替换为你实际上传的文件名）
+  const wallpapers = [
+    'assets/images/wallpapers/1.jpg',
+    'assets/images/wallpapers/2.jpg',
+    'assets/images/wallpapers/3.jpg'
+  ];
+
+  // 2. 页面载入时随机选择一张设置为背景
+  function setRandomBackground() {
+    const randomIndex = Math.floor(Math.random() * wallpapers.length);
+    const selectedWallpaper = wallpapers[randomIndex];
+    document.body.style.backgroundImage = `url('${selectedWallpaper}')`;
+  }
+
+  // 3. 执行背景加载
+  setRandomBackground();
+
+  // 4. 修复“探索内容”按钮点击无反应
+  const exploreBtn = document.querySelector('a.btn, button, .hero a');
+  if (exploreBtn) {
+    exploreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetSection = document.getElementById('gallery') || document.querySelector('section');
+      if (targetSection) {
+        targetSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
+</script>
 
     <header>
         <a href="#" class="logo">yatogami.bbroot.com</a>
@@ -208,10 +261,7 @@
                     <h3>数字媒体创作</h3>
                     <p>结合 Maya、Blender 建模与 AE 动态效果制作的数媒习作与桌面定制主题展示。</p>
                 </div>
-                <div class="card">
-                    <h3>硬笔书法日常</h3>
-                    <p>行楷与瘦金体硬笔书法练习记录，体验线条与字体的古典之美。</p>
-                </div>
+                
             </div>
         </section>
     </div>
@@ -236,5 +286,27 @@
         <p>&copy; 2026 yatogami.bbroot.com. All Rights Reserved. Powered by DNSHE & Static Hosting.</p>
     </footer>
 
+    <script src="https://fastly.jsdelivr.net/npm/oh-my-live2d@latest"></script>
+<script>
+  OML2D.loadOml2d({
+    models: [
+      {
+        path: 'https://raw.githubusercontent.com/iCharlesZ/vscode-live2d-models/master/model-library/date_a_live/tohka/model.json',
+        scale: 0.12,
+        position: [0, 20],
+        stageStyle: {
+          width: 300,
+          height: 380
+        }
+      }
+    ],
+    tips: {
+      style: {
+        width: 230,
+        height: 80
+      }
+    }
+  });
+</script>
 </body>
 </html>
