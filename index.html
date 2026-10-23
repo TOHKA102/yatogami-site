@@ -594,85 +594,43 @@
   <!-- ================= 纯原生业务逻辑 ================= -->
   <script>
     // 壁纸路径常量（以项目仓库静态目录为准）
+// 1. 支持的壁纸格式列表（按优先级依次嗅探）
     const BASE_PATH = 'assets/images/wallpapers/';
+    const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'];
     const wallpaperPool = [];
 
-    // ==========================================
-    // 1. 亮色 / 暗色主题切换
-    // ==========================================
-    function initTheme() {
-      const savedTheme = localStorage.getItem('tohka_theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeUI(savedTheme);
+    // 检测单张图片是否存在
+    function checkImageExists(url) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
     }
 
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', targetTheme);
-      localStorage.setItem('tohka_theme', targetTheme);
-      updateThemeUI(targetTheme);
-    }
-
-    function updateThemeUI(theme) {
-      const icon = document.getElementById('theme-icon');
-      const text = document.getElementById('theme-text');
-      if (icon && text) {
-        if (theme === 'light') {
-          icon.textContent = '☀️';
-          text.textContent = '亮色';
-        } else {
-          icon.textContent = '🌙';
-          text.textContent = '暗色';
+    // 自动寻找某序号匹配的图片路径（优先检查 png，再检查 jpg/jpeg/webp）
+    async function findWallpaperUrl(index) {
+      for (const ext of EXTENSIONS) {
+        const url = `${BASE_PATH}${index}.${ext}`;
+        if (await checkImageExists(url)) {
+          return url;
         }
       }
-    }
-
-    initTheme();
-
-    // ==========================================
-    // 2. 一键复制邮箱交互
-    // ==========================================
-    function copyEmail() {
-      const email = document.getElementById('email-text').innerText;
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(email).then(() => {
-          showCopySuccess();
-        }).catch(() => fallbackCopy(email));
-      } else {
-        fallbackCopy(email);
+      // 容错兜底：如果直接放到了 assets/ 根目录下
+      for (const ext of EXTENSIONS) {
+        const fallbackUrl = `assets/${index}.${ext}`;
+        if (await checkImageExists(fallbackUrl)) {
+          return fallbackUrl;
+        }
       }
+      return null;
     }
 
-    function fallbackCopy(text) {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      showCopySuccess();
-    }
-
-    function showCopySuccess() {
-      const btn = document.querySelector('.btn-copy-email');
-      const originalText = btn.textContent;
-      btn.textContent = '已复制!';
-      btn.style.backgroundColor = '#4caf50';
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.style.backgroundColor = '';
-      }, 2000);
-    }
-
-    // ==========================================
-    // 3. 画廊构建与开屏随机背景
-    // ==========================================
-    function createGalleryCard(index) {
+    // 创建画廊纯图卡片
+    function createGalleryCard(imgUrl, index) {
       const card = document.createElement('div');
       card.className = 'gallery-card';
-      const imgUrl = `${BASE_PATH}${index}.jpg`;
-      
       card.onclick = function() { openLightbox(imgUrl); };
 
       const img = document.createElement('img');
@@ -680,20 +638,11 @@
       img.alt = `TOHKA Wallpaper ${index}`;
       img.loading = 'lazy';
 
-      // 路径降级兜底：兼容根目录 assets/
-      img.onerror = function() {
-        if (!this.getAttribute('data-tried-fallback')) {
-          this.setAttribute('data-tried-fallback', 'true');
-          const fallback = `assets/${index}.jpg`;
-          this.src = fallback;
-          card.onclick = function() { openLightbox(fallback); };
-        }
-      };
-
       card.appendChild(img);
       return card;
     }
 
+    // 随机背景切换（智能避开上一次背景）
     function setRandomBackground(pool) {
       if (!pool || pool.length === 0) return;
       const bgLayer = document.getElementById('bg-layer');
@@ -716,47 +665,39 @@
       testImg.onload = function() {
         bgLayer.style.backgroundImage = `url('${chosenUrl}')`;
       };
-      testImg.onerror = function() {
-        const fallback = chosenUrl.replace('assets/images/wallpapers/', 'assets/');
-        bgLayer.style.backgroundImage = `url('${fallback}')`;
-      };
     }
 
-    // 初始化画廊并开启静默自动探测
-    function initGalleryEngine() {
+    // 全自动多格式画廊探测引擎
+    async function initGalleryEngine() {
       const container = document.getElementById('gallery-container');
       container.innerHTML = '';
 
-      // 1. 优先即时渲染基础 1, 2, 3 壁纸
-      for (let i = 1; i <= 3; i++) {
-        container.appendChild(createGalleryCard(i));
-        wallpaperPool.push(`${BASE_PATH}${i}.jpg`);
+      let index = 1;
+      let firstLoaded = false;
+
+      // 自动从 1 开始挨个向上探测（上限 100 张）
+      while (index <= 100) {
+        const validUrl = await findWallpaperUrl(index);
+        if (validUrl) {
+          wallpaperPool.push(validUrl);
+          container.appendChild(createGalleryCard(validUrl, index));
+          
+          // 找到第 1 张图时立即挂上背景，防止等待白屏
+          if (!firstLoaded) {
+            setRandomBackground([validUrl]);
+            firstLoaded = true;
+          }
+          index++;
+        } else {
+          // 遇到不连续的空缺自动停止
+          break;
+        }
       }
 
-      // 2. 立即应用随机壁纸
-      setRandomBackground(wallpaperPool);
-
-      // 3. 后台无感自动探测后续新增图片（从 4.jpg 开始）
-      probeNextWallpaper(4);
-    }
-
-    function probeNextWallpaper(index) {
-      const container = document.getElementById('gallery-container');
-      const testUrl = `${BASE_PATH}${index}.jpg`;
-      const testImg = new Image();
-
-      testImg.onload = function() {
-        // 发现新壁纸，自动创建卡片并扩充背景池
-        container.appendChild(createGalleryCard(index));
-        wallpaperPool.push(testUrl);
-        // 继续向上探测（上限设为 100 张）
-        if (index < 100) {
-          probeNextWallpaper(index + 1);
-        }
-      };
-      // 遇到 404 自动优雅终止探测
-      testImg.onerror = function() {};
-      testImg.src = testUrl;
+      // 所有图片探测完毕后，在完整的图片池中执行一次真正的随机背景轮换
+      if (wallpaperPool.length > 1) {
+        setRandomBackground(wallpaperPool);
+      }
     }
 
     initGalleryEngine();
