@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)
 ![Status](https://img.shields.io/badge/status-active-success.svg?style=flat-square)
 
-✨ **一个融合了二次元 ACG 文化、数字媒体设计展示与 Galgame 心得分享的个人美学空间。** ✨
+✨ **二次元壁纸收录** ✨
 
 [🌐 访问在线站点](https://yatogami.bbroot.com)
 
