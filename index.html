@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TOHKA - 壁纸与个人空间</title>
   <style>
-    /* 全局与暗色渐变重置 */
+    /* 全局重置 */
     * {
       margin: 0;
       padding: 0;
@@ -18,24 +18,35 @@
     body {
       min-height: 100vh;
       color: #fff;
-      background-color: #0d0614;
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      background-repeat: no-repeat;
-      transition: background-image 0.5s ease-in-out;
-      overflow-x: hidden;
+      background-color: #0b0512;
+      position: relative;
     }
 
-    /* 遮罩层：防止背景图片太亮导致文字看不清 */
+    /* 1. 独立全屏背景层（带透明度控制） */
+    #bg-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.75; /* 壁纸透明度：0.1 ~ 1.0 随意调节 */
+      transition: background-image 0.6s ease-in-out;
+      z-index: -2;
+    }
+
+    /* 2. 背景暗色渐变暗角遮罩 */
     .bg-overlay {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(180deg, rgba(13, 6, 20, 0.6) 0%, rgba(20, 10, 35, 0.8) 100%);
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, rgba(11, 5, 18, 0.45) 0%, rgba(11, 5, 18, 0.88) 100%);
       z-index: -1;
+      pointer-events: none;
     }
 
     /* 顶部导航栏 */
@@ -46,10 +57,10 @@
       justify-content: space-between;
       align-items: center;
       padding: 18px 40px;
-      background: rgba(20, 10, 30, 0.65);
+      background: rgba(18, 8, 28, 0.7);
       backdrop-filter: blur(15px);
       -webkit-backdrop-filter: blur(15px);
-      border-bottom: 1px solid rgba(255, 105, 180, 0.2);
+      border-bottom: 1px solid rgba(255, 105, 180, 0.25);
       z-index: 100;
     }
     .logo {
@@ -59,6 +70,7 @@
       color: #ff69b4;
       text-decoration: none;
       text-shadow: 0 0 10px rgba(255, 105, 180, 0.6);
+      cursor: pointer;
     }
     nav a {
       color: #e0d0f0;
@@ -66,15 +78,16 @@
       margin-left: 28px;
       font-size: 0.95rem;
       transition: color 0.3s, text-shadow 0.3s;
+      cursor: pointer;
     }
-    nav a:hover, nav a.active {
+    nav a:hover {
       color: #ff77a9;
       text-shadow: 0 0 8px rgba(255, 119, 169, 0.6);
     }
 
-    /* 首屏展示区 (Hero) */
+    /* 首屏展示区 */
     .hero {
-      min-height: calc(100vh - 75px);
+      min-height: 90vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -85,11 +98,11 @@
     .hero h1 {
       font-size: 4.5rem;
       letter-spacing: 4px;
-      background: linear-gradient(135deg, #fff 30%, #ff69b4 100%);
+      background: linear-gradient(135deg, #ffffff 20%, #ff69b4 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 18px;
-      filter: drop-shadow(0 4px 15px rgba(255, 105, 180, 0.3));
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 15px rgba(255, 105, 180, 0.4));
     }
     .hero p {
       font-size: 1.15rem;
@@ -97,6 +110,7 @@
       max-width: 650px;
       line-height: 1.8;
       margin-bottom: 35px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
     }
     .btn-explore {
       display: inline-block;
@@ -105,73 +119,75 @@
       font-weight: 600;
       color: #fff;
       background: linear-gradient(135deg, #8a2be2, #ff69b4);
-      border: none;
       border-radius: 30px;
-      cursor: pointer;
       text-decoration: none;
       box-shadow: 0 4px 20px rgba(255, 105, 180, 0.4);
       transition: transform 0.25s, box-shadow 0.25s;
+      cursor: pointer;
     }
     .btn-explore:hover {
       transform: translateY(-3px);
-      box-shadow: 0 6px 25px rgba(255, 105, 180, 0.6);
+      box-shadow: 0 6px 25px rgba(255, 105, 180, 0.7);
     }
 
-    /* 画廊板块 */
+    /* 板块容器公用样式 */
     .section-container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 80px 20px;
+      padding: 90px 20px;
     }
     .section-title {
       text-align: center;
       font-size: 2.2rem;
       margin-bottom: 45px;
       color: #fff;
-      text-shadow: 0 0 12px rgba(255, 105, 180, 0.4);
+      text-shadow: 0 0 12px rgba(255, 105, 180, 0.5);
     }
+
+    /* 画廊网格：纯图展示 */
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 30px;
+      gap: 25px;
     }
     .gallery-card {
+      position: relative;
       background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 105, 180, 0.2);
+      border: 1px solid rgba(255, 105, 180, 0.25);
       border-radius: 16px;
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.3s ease, border-color 0.3s;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      aspect-ratio: 16 / 9;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s;
     }
     .gallery-card:hover {
       transform: translateY(-6px);
-      border-color: rgba(255, 105, 180, 0.6);
+      border-color: rgba(255, 105, 180, 0.7);
+      box-shadow: 0 10px 30px rgba(255, 105, 180, 0.35);
     }
     .gallery-card img {
       width: 100%;
-      height: 240px;
+      height: 100%;
       object-fit: cover;
       display: block;
       transition: transform 0.4s ease;
     }
     .gallery-card:hover img {
-      transform: scale(1.04);
-    }
-    .card-info {
-      padding: 16px;
-      text-align: center;
-      color: #e0d0f0;
-      font-size: 1rem;
-      font-weight: 500;
+      transform: scale(1.06);
     }
 
     /* 关于小窝板块 */
     .about-box {
-      background: rgba(25, 12, 38, 0.75);
+      background: rgba(22, 10, 34, 0.8);
       border: 1px solid rgba(255, 105, 180, 0.25);
       border-radius: 20px;
       padding: 45px 35px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .about-grid {
       display: grid;
@@ -180,26 +196,26 @@
       margin-bottom: 30px;
     }
     .about-card {
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
       padding: 22px;
     }
     .about-card h3 {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       color: #ff77a9;
       margin-bottom: 12px;
     }
     .about-card ul {
       list-style: none;
-      line-height: 2;
+      line-height: 2.1;
       font-size: 0.95rem;
       color: #d1c4e9;
     }
     .about-statement {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
       border-left: 4px solid #ff69b4;
-      padding: 20px;
+      padding: 22px;
       border-radius: 8px;
       line-height: 1.8;
       color: #e0d0f0;
@@ -212,38 +228,72 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(5, 2, 10, 0.9);
-      backdrop-filter: blur(8px);
-      z-index: 9999;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(5, 2, 10, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 99999;
       justify-content: center;
       align-items: center;
       cursor: zoom-out;
     }
-    #lightbox img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
-      box-shadow: 0 0 30px rgba(255, 105, 180, 0.4);
+    .lightbox-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 90vw;
+      max-height: 90vh;
+      cursor: default;
+    }
+    #lightbox-img {
+      max-width: 90vw;
+      max-height: 78vh;
+      border-radius: 12px;
+      box-shadow: 0 0 35px rgba(255, 105, 180, 0.5);
+      user-select: none;
+      object-fit: contain;
+    }
+    .lightbox-actions {
+      margin-top: 16px;
+    }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 26px;
+      background: linear-gradient(135deg, #8a2be2, #ff69b4);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 30px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: 0 4px 18px rgba(255, 105, 180, 0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(255, 105, 180, 0.7);
     }
 
-    /* 底部版权 */
+    /* 页脚 */
     footer {
       text-align: center;
       padding: 40px 20px;
       color: #8a7a9a;
       font-size: 0.85rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. 背景半透明遮罩 -->
+  <!-- 背景渲染层 -->
+  <div id="bg-layer"></div>
   <div class="bg-overlay"></div>
 
-  <!-- 2. 顶部导航栏 -->
+  <!-- 顶部导航栏 -->
   <header>
     <a href="#home" class="logo">TOHKA</a>
     <nav>
@@ -253,32 +303,305 @@
     </nav>
   </header>
 
-  <!-- 3. 主视觉区域 (Hero) -->
+  <!-- 主体内容 -->
   <main>
     <section id="home" class="hero">
       <h1>TOHKA</h1>
-      <p>夜刀神十香与二次元美学空间。记录灵感、收集壁纸与数字创意。</p>
+      <p>这是独属于TOHKA的网站</p>
       <a href="#gallery" class="btn-explore">探索壁纸</a>
     </section>
 
-    <!-- 4. 画廊展示板块 (引用 1.jpg, 2.jpg, 3.jpg) -->
+    <!-- 精选壁纸画廊（全自动脚本侦测与动态排序渲染） -->
     <section id="gallery" class="section-container">
       <h2 class="section-title">🌸 精选壁纸画廊</h2>
-      <div class="gallery-grid">
+      <div class="gallery-grid" id="gallery-container">
+        <!-- 卡片全自动探测生成 -->
+      </div>
+    </section>
+<!-- 关于小窝板块（集成头像、个人档案、GitHub 与邮箱互动链接） -->
+    <section id="about" class="section-container">
+      <div class="about-box">
         
-        <!-- 壁纸 1 -->
-        <div class="gallery-card" onclick="openLightbox(this)">
-          <img src="assets/images/wallpapers/1.jpg" alt="TOHKA Wallpaper 01">
-          <div class="card-info">夜刀神十香 · 壁纸 01</div>
+        <!-- 1. 顶部站长名片与头像 -->
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 35px;">
+          <!-- 动态同步 GitHub 头像（带霓虹流光边框） -->
+          <div style="position: relative; width: 110px; height: 110px; margin-bottom: 16px;">
+            <img src="https://github.com/TOHKA102.png" alt="TOHKA 头像" 
+                 style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ff69b4; box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);">
+          </div>
+          <h2 style="font-size: 2.2rem; color: #fff; margin-bottom: 8px; text-shadow: 0 0 12px rgba(255, 105, 180, 0.5);">
+            TOHKA
+          </h2>
+          <p style="color: #b39ddb; font-size: 0.95rem; max-width: 500px; line-height: 1.6;">
+            夜刀神十香与二次元美学空间
+          </p>
+
+          <!-- 社交外链微光按钮组 -->
+          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 20px;">
+            <!-- GitHub 个人账户 -->
+            <a href="https://github.com/TOHKA102" target="_blank" rel="noopener noreferrer"
+               style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 105, 180, 0.3); border-radius: 20px; color: #fff; text-decoration: none; font-size: 0.9rem; transition: all 0.3s ease;">
+              <span>🐙 GitHub 账户</span>
+            </a>
+
+            <!-- GitHub 网站项目仓库 -->
+            <a href="https://github.com/TOHKA102/yatogami-site" target="_blank" rel="noopener noreferrer"
+               style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 105, 180, 0.3); border-radius: 20px; color: #fff; text-decoration: none; font-size: 0.9rem; transition: all 0.3s ease;">
+              <span>📦 网站仓库源码</span>
+            </a>
+
+            <!-- 邮箱联系 -->
+            <a href="2159175035@qq.com"
+               style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 105, 180, 0.3); border-radius: 20px; color: #fff; text-decoration: none; font-size: 0.9rem; transition: all 0.3s ease;">
+              <span>✉️ 联系邮箱</span>
+            </a>
+          </div>
         </div>
 
-        <!-- 壁纸 2 -->
-        <div class="gallery-card" onclick="openLightbox(this)">
-          <img src="assets/images/wallpapers/2.jpg" alt="TOHKA Wallpaper 02">
-          <div class="card-info">夜刀神十香 · 壁纸 02</div>
+        <!-- 2. 信息网格卡片 -->
+        <div class="about-grid">
+          <!-- 站长属性 -->
+          <div class="about-card">
+            <h3>👤 个人档案</h3>
+            <ul>
+              <li>🏷️ <b>站长：</b>TOHKA</li>
+              <li>🌸 <b>信仰：</b>夜刀神十香（《约会大作战》）</li>
+              <li>🎮 <b>喜好：</b>Galgame 体验 / 二次元 ACG 文化</li>
+              <li>💻 <b>专业方向：</b>数字媒体技术</li>
+            </ul>
+          </div>
+
+          <!-- 站点技术信息 -->
+          <div class="about-card">
+            <h3>🛠️ 空间信息</h3>
+            <ul>
+              <li>🎨 <b>定位：</b>二次元精选壁纸与个人空间</li>
+              <li>🚀 <b>技术栈：</b>HTML5 / CSS3 / JavaScript</li>
+              <li>🌐 <b>托管：</b>Cloudflare Pages 全球 CDN 加速</li>
+              <li>📬 <b>反馈通道：</b>支持邮件与 GitHub Issue 交流</li>
+            </ul>
+          </div>
         </div>
 
-        <!-- 壁纸 3 -->
-        <div class="gallery-card" onclick="openLightbox(this)">
-          <img src="assets/images/wallpapers/3.jpg" alt="TOHKA Wallpaper 03">
-          <div
+        <!-- 3. 自定义建站寄语 -->
+        <div class="about-statement">
+          <p>🌟 <b>写在最后：</b>这里是专属于我的二次元数字化小窝。每一次重新进入网站都会随机切换一张壁纸陪伴。收集喜欢的画面，留存创作与热爱的轨迹。</p>
+        </div>
+
+      </div>
+    </section>
+   </section>
+  </main>
+
+  <!-- 全屏图片查看与下载弹窗 -->
+  <div id="lightbox" onclick="closeLightbox(event)">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="大图预览">
+      <div class="lightbox-actions">
+        <a id="download-btn" href="" download class="btn-download" target="_blank">
+          <span>📥 下载原图壁纸</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer>
+    <p>© 2026 TOHKA. Powered by Cloudflare Pages.</p>
+  </footer>
+
+  <!-- ================= 核心业务交互脚本 ================= -->
+  <script>
+    const BASE_PATH = 'assets/images/wallpapers/';
+
+    // 辅助工具：测试某张图片是否存在
+    function checkImageExists(url) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    }
+
+    // 动态创建并插入单个画廊卡片
+    function createGalleryCard(index) {
+      const card = document.createElement('div');
+      card.className = 'gallery-card';
+      const imgUrl = `${BASE_PATH}${index}.jpg`;
+      
+      card.onclick = function() { openLightbox(imgUrl); };
+
+      const img = document.createElement('img');
+      img.src = imgUrl;
+      img.alt = `TOHKA Wallpaper ${index}`;
+      img.loading = 'lazy';
+      
+      // 路径容错
+      img.onerror = function() {
+        if (!this.getAttribute('data-tried-fallback')) {
+          this.setAttribute('data-tried-fallback', 'true');
+          this.src = `assets/${index}.jpg`;
+        }
+      };
+
+      card.appendChild(img);
+      return card;
+    }
+
+    // 智能不重复随机背景设置
+    function applyRandomBackground(total) {
+      if (total <= 0) return;
+      const bgLayer = document.getElementById('bg-layer');
+      let lastIndex = parseInt(localStorage.getItem('last_bg_index') || '0', 10);
+      let newIndex;
+
+      if (total > 1) {
+        do {
+          newIndex = Math.floor(Math.random() * total) + 1;
+        } while (newIndex === lastIndex);
+      } else {
+        newIndex = 1;
+      }
+
+      localStorage.setItem('last_bg_index', newIndex);
+
+      const targetUrl = `${BASE_PATH}${newIndex}.jpg`;
+      const testImg = new Image();
+      testImg.src = targetUrl;
+      testImg.onload = function() {
+        bgLayer.style.backgroundImage = `url('${targetUrl}')`;
+      };
+      testImg.onerror = function() {
+        bgLayer.style.backgroundImage = `url('assets/${newIndex}.jpg')`;
+      };
+    }
+
+    // 核心自动侦测与渲染引擎：从 1.jpg 开始自动嗅探，无需手动改代码！
+    async function initAutoGallery() {
+      const container = document.getElementById('gallery-container');
+      
+      // 读取本地缓存的历史数量（默认初次为 3）进行毫秒级秒开渲染
+      let knownCount = parseInt(localStorage.getItem('tohka_wallpaper_count') || '3', 10);
+      for (let i = 1; i <= knownCount; i++) {
+        container.appendChild(createGalleryCard(i));
+      }
+      applyRandomBackground(knownCount);
+
+      // 后台异步自动探测实际图片数量（上限探测到 100 张）
+      let actualCount = 0;
+      let probeIndex = 1;
+
+      while (probeIndex <= 100) {
+        const url = `${BASE_PATH}${probeIndex}.jpg`;
+        const exists = await checkImageExists(url);
+        if (exists) {
+          actualCount = probeIndex;
+          // 如果探测到的新图片超出了初始渲染的卡片，自动无缝追加到画廊中！
+          if (probeIndex > knownCount) {
+            container.appendChild(createGalleryCard(probeIndex));
+          }
+          probeIndex++;
+        } else {
+          break; // 探测到 404 说明后面没有图片了，自动终止探测
+        }
+      }
+
+      // 如果检测到的总数与历史缓存不一致，自动更新缓存
+      if (actualCount > 0 && actualCount !== knownCount) {
+        localStorage.setItem('tohka_wallpaper_count', actualCount);
+        // 如果删除了图片导致实际偏少，重新修正画廊
+        if (actualCount < knownCount) {
+          container.innerHTML = '';
+          for (let i = 1; i <= actualCount; i++) {
+            container.appendChild(createGalleryCard(i));
+          }
+          applyRandomBackground(actualCount);
+        }
+      }
+    }
+
+    initAutoGallery();
+
+    // 导航栏平滑滚动监听
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        if (targetId && targetId !== '#') {
+          const targetElem = document.querySelector(targetId);
+          if (targetElem) {
+            e.preventDefault();
+            targetElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    });
+
+    // 画廊大图放大弹窗与下载
+    function openLightbox(imgUrl) {
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      const downloadBtn = document.getElementById('download-btn');
+      
+      if (lightbox && lightboxImg && downloadBtn) {
+        lightboxImg.src = imgUrl;
+        downloadBtn.href = imgUrl;
+        
+        // 自动提取文件名作为下载后的名字，例如 TOHKA-wallpaper-1.jpg
+        const filename = imgUrl.split('/').pop() || 'wallpaper.jpg';
+        downloadBtn.setAttribute('download', `TOHKA-${filename}`);
+        
+        lightbox.style.display = 'flex';
+      }
+    }
+
+    function closeLightbox(event) {
+      const lightbox = document.getElementById('lightbox');
+      if (lightbox) {
+        lightbox.style.display = 'none';
+      }
+    }
+  </script>
+
+  <!-- ================= 异步独立挂载看板娘 ================= -->
+  <script>
+    window.addEventListener('load', function() {
+      const omlScript = document.createElement('script');
+      omlScript.src = 'https://fastly.jsdelivr.net/npm/oh-my-live2d@latest';
+      omlScript.async = true;
+      omlScript.onload = function() {
+        if (window.OML2D) {
+          try {
+            window.OML2D.loadOml2d({
+              models: [
+                {
+                  path: 'https://fastly.jsdelivr.net/gh/Eikanya/Live2d-model@master/Live2D/Senko-san/senko/senko.model.json',
+                  scale: 0.09,
+                  position: [-10, 20],
+                  stageStyle: { width: 280, height: 350 }
+                }
+              ],
+              tips: {
+                style: { width: 220, height: 75 },
+                idleTips: {
+                  wordTheDay: false,
+                  duration: 4000,
+                  interval: 9000,
+                  words: [
+                    '欢迎来到 TOHKA 的小窝~',
+                    '点击画廊里的壁纸可以全屏放大和一键下载哦！',
+                    '每次刷新都会随机换一张壁纸陪伴你~'
+                  ]
+                }
+              }
+            });
+          } catch(err) {
+            console.warn('Live2D 初始化跳过:', err);
+          }
+        }
+      };
+      document.body.appendChild(omlScript);
+    });
+  </script>
+</body>
+</html>
